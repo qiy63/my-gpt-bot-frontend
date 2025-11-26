@@ -29,7 +29,11 @@ export default function ChatPage() {
 
         const data = await response.json();
 
-        setMessages([...newMessages, {role: "assistant" as const, content: data.answer}]);
+        setMessages([...newMessages, {
+            role: "assistant" as const, 
+            content: data.answer || data.reply || "No reply from backend."
+        }]);
+
         setInput("");
 
     };
