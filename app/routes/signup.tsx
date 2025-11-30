@@ -1,4 +1,5 @@
 import * as React from "react";
+import { useNavigate } from "react-router";
 
 export default function Signup() {
 
@@ -6,6 +7,7 @@ export default function Signup() {
     const [email, setEmail] = React.useState("");
     const [password, setPassword] = React.useState("");
     const [msg, setMsg] = React.useState("");
+    const navigate = useNavigate();
 
     const register = async () => {
 
@@ -19,6 +21,13 @@ export default function Signup() {
 
         const data = await res.json();
         setMsg(data.message || data.error);
+
+        if (data.message) {
+
+            setMsg("Registered! Please login.");
+            navigate("/login");
+
+        }
 
     };
 

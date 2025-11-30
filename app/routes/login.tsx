@@ -1,10 +1,12 @@
 import * as React from "react";
+import { useNavigate } from "react-router";
 
 export default function Login() {
 
     const [email, setEmail] = React.useState("");
     const [password, setPassword] = React.useState("");
     const [msg, setMsg] = React.useState("");
+    const navigate = useNavigate();
 
     const login = async () => {
 
@@ -22,6 +24,7 @@ export default function Login() {
         if (data.token){
 
             localStorage.setItem("token", data.token);
+            navigate("/chat");
 
         }
 
@@ -34,7 +37,7 @@ export default function Login() {
             <h1>Login</h1>
 
             <input placeholder="Email" onChange={e => setEmail(e.target.value)} /><br/>
-            <input placeholder="Name" onChange={e => setPassword(e.target.value)} /><br/>
+            <input placeholder="Password" onChange={e => setPassword(e.target.value)} /><br/>
 
             <button onClick={login}>Login</button>
             <p>{msg}</p>

@@ -1,4 +1,5 @@
 import * as React from "react";
+import { useNavigate } from "react-router";
 
 interface Message {
 
@@ -9,9 +10,30 @@ interface Message {
 
 export default function ChatPage() {
 
+    const navigate = useNavigate();
     const [messages, setMessages] = React.useState<Message[]>([]);
     const [input, setInput] = React.useState("");
     const [loading, setLoading] = React.useState(false);
+
+    // redirect to login if no token
+    React.useEffect(() => {
+
+        const token = localStorage.getItem("token");
+
+        if (!token) {
+
+            navigate("/login");
+
+        }
+
+    }, []);
+
+    const logout = () => {
+
+        localStorage.removeItem("token");
+        navigate("/login");
+
+    };
 
     const sendMessage = async () => {
 
@@ -22,25 +44,54 @@ export default function ChatPage() {
 
         setLoading(true);
 
-        const response = await fetch("http://localhost:3000/ask", {
+        try {
 
-            method: "POST",
-            headers: {"Content-Type": "application/json"},
-            body: JSON.stringify({question: input}),
+            const token = localStorage.getItem("token");
 
-        });
+            if (!token) {
 
-        const data = await response.json();
-        setLoading(false);
+                alert("Please login again.");
+                navigate("/login");
+                return;
 
-        setMessages([
-            ...newMessages, {
-                role: "assistant" as const, 
-                content: data.answer || data.reply || "No reply from backend."
             }
-        ]);
 
-        setInput("");
+            const response = await fetch("http://localhost:3000/ask", {
+
+                method: "POST",
+                headers: {
+                    
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`
+                
+                },
+                body: JSON.stringify({question: input}),
+
+            });
+
+            const data = await response.json();
+            setLoading(false);
+
+            setMessages([
+                ...newMessages, {
+                    role: "assistant" as const, 
+                    content: data.answer || data.reply || JSON.stringify(data)
+                }
+            ]);
+
+            setInput("");
+
+        } catch (err) {
+
+            setLoading(false);
+            setMessages([
+
+                ...newMessages,
+                { role: "assistant" as const, content: "Error: unable to connect to server."}
+
+            ]);
+
+        }
 
     };
 
@@ -74,7 +125,24 @@ export default function ChatPage() {
 
             </style>
 
-            <div style={{padding: 20, maxWidth:600, margin:"0, auto"}}>
+            <div style={{padding: 20}}>
+
+                <button
+                
+                    onClick={logout}
+                    style={{
+
+                        padding: "8px 14px",
+                        background: "red",
+                        color: "white",
+                        borderRadius: 6,
+                        marginBottom: 20
+
+                    }}
+                    
+                >
+                    Logout
+                </button>
 
                 <h1>MyPropertyAid</h1>
 
