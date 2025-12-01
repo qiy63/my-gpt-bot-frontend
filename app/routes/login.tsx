@@ -70,10 +70,9 @@ export default function Login() {
             <h3>MyPropertyAid</h3>
           </div>
 
-          <h1>We Are The Best In Business</h1>
+          <h1>Lorem ipsum dolor sit amet consectetur adipisicing elit.</h1>
           <p>
-            Elevate your workspace efficiency with Galileo's sleek and intuitive login
-            panel. Designed with simplicity, security, and speed in mind.
+            Lorem, ipsum dolor sit amet consectetur adipisicing elit. Quae ullam nobis pariatur, obcaecati fugit nostrum nisi voluptatum illum dicta labore?
           </p>
         </div>
 
