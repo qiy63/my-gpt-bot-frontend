@@ -33,7 +33,7 @@
   content: "";
   position: absolute;
   inset: 0;
-  background: rgba(198, 190, 190, 0.029);     /* adjustable opacity */
+  background: rgba(255, 255, 255, 0.029);     /* adjustable opacity */
   backdrop-filter: brightness(0.8);
   z-index: 0;
 }

@@ -147,7 +147,18 @@ export default function ProfilePage() {
                 <div>
                 <div style={{marginBottom:8}}>Profile picture</div>
                 {profile?.profile_picture && (
-                    <img src={`http://localhost:3000/upload/${profile.profile_picture}`} alt="profile" style={{width:84,height:84,objectFit:"cover",borderRadius:8,display:"block",marginBottom:8}} />
+                    <img 
+                        src={`http://localhost:3000/profile/upload/${profile.profile_picture}`} 
+                        alt="profile"
+                        style={{
+                            width: 84,
+                            height: 84,
+                            objectFit: "cover",
+                            borderRadius: 8,
+                            display: "block",
+                            marginBottom: 8
+                        }}
+                    />
                 )}
                 <input type="file" accept="image/*" onChange={(e)=>setPictureFile(e.target.files?.[0] || null)} />
                 </div>
