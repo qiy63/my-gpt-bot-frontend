@@ -55,60 +55,58 @@ export default function ProfilePage() {
     }, [navigate]);
 
     const handleSave = async () => {
-
         if (!profile) return;
         const token = localStorage.getItem("token");
         setSaving(true);
 
         try {
+            const form = new FormData();
 
+            // append text fields
+            form.append("full_name", profile.full_name || "");
+            form.append("phone", profile.phone || "");
+            form.append("gender", profile.gender || "");
+            form.append("birthdate", profile.birthdate || "");
+            form.append("address", profile.address || "");
+            form.append("occupation", profile.occupation || "");
+            form.append("national_id", profile.national_id || "");
+
+            // append picture file if changed
             if (pictureFile) {
-
-                const form = new FormData();
                 form.append("picture", pictureFile);
-
-                const up = await fetch("http://localhost:3000/api/profile/upload", {
-
-                    method: "POST",
-                    headers: { Authorization: `Bearer ${token}`},
-                    body: form
-
-                });
-
-                const upData = await up.json();
-                profile.profile_picture = upData.filePath.replace("/profile/upload/", "");
-
             }
 
             const res = await fetch("http://localhost:3000/api/profile", {
-
                 method: "PUT",
                 headers: {
-
-                    "Content-Type": "application/json",
                     Authorization: `Bearer ${token}`
-
+                    // ❗ DO NOT SET "Content-Type": "multipart/form-data"
+                    // fetch will automatically set the correct headers for FormData
                 },
-                body: JSON.stringify(profile)
-
+                body: form
             });
 
             const data = await res.json();
-
             alert(data.message || "Saved");
 
-        } catch (err) {
+            // update the UI with returned pic path
+            if (data.profile_picture_url) {
+                setProfile({
+                    ...profile,
+                    profile_picture: data.profile_picture_url.replace("http://localhost:3000/profile/upload/","")
+                });
+            }
 
+            setPictureFile(null);
+
+        } catch (err) {
             console.error(err);
             alert("Save Failed");
-
         } finally {
-
             setSaving(false);
-
         }
-
     };
+
 
     if (loading) return <div style={{padding: 20}}>Loading...</div>
 

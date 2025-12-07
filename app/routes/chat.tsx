@@ -1,5 +1,6 @@
 import * as React from "react";
 import { useNavigate } from "react-router";
+import "../styles/chat.css";
 
 interface Message {
 
@@ -15,6 +16,8 @@ export default function ChatPage() {
     const [input, setInput] = React.useState("");
     const [loading, setLoading] = React.useState(false);
 
+    const messagesEndRef = React.useRef<HTMLDivElement | null>(null);
+
     // redirect to login if no token
     React.useEffect(() => {
 
@@ -27,6 +30,13 @@ export default function ChatPage() {
         }
 
     }, []);
+
+    // auto scroll to bottom
+    React.useEffect(() => {
+
+        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+
+    }, [messages, loading]);
 
     const logout = () => {
 
@@ -41,6 +51,7 @@ export default function ChatPage() {
 
         const newMessages = [...messages, {role: "user" as const, content: input}];
         setMessages(newMessages);
+        setInput("");
 
         setLoading(true);
 
@@ -48,21 +59,13 @@ export default function ChatPage() {
 
             const token = localStorage.getItem("token");
 
-            if (!token) {
-
-                alert("Please login again.");
-                navigate("/login");
-                return;
-
-            }
-
             const response = await fetch("http://localhost:3000/ask", {
 
                 method: "POST",
                 headers: {
                     
                     "Content-Type": "application/json",
-                    "Authorization": `Bearer ${token}`
+                    Authorization: `Bearer ${token}`,
                 
                 },
                 body: JSON.stringify({question: input}),
@@ -75,8 +78,8 @@ export default function ChatPage() {
             setMessages([
                 ...newMessages, {
                     role: "assistant" as const, 
-                    content: data.answer || data.reply || JSON.stringify(data)
-                }
+                    content: data.answer ?? "No Response",
+                },
             ]);
 
             setInput("");
@@ -96,177 +99,68 @@ export default function ChatPage() {
     };
 
     return (
+        <div className="chat-layout">
+            {/* Sidebar */}
+            <div className="chat-sidebar">
+                <div className="sidebar-title">MyPropertyAid</div>
 
-        <>
+                <div className="sidebar-item" onClick={() => navigate("/profile")}>
+                    Profile
+                </div>
 
-            <style>
+                <div className="sidebar-item" onClick={() => navigate("/chat")}>
+                    Chat
+                </div>
 
-                {`
-                
-                    .dot1, .dot2, .dot3{
-                    
-                        animation: blink 1.4s infinite both;
-                        margin-right: 4px;
-                    
-                    }
-                    
-                    .dot2 {animation-delay: 0.2s;}
-                    .dot3 {animation-delay: 0.4s;}
+                <div className="logout-btn" onClick={logout}>Logout</div>
+            </div>
 
-                    @keyframes blink {
-                    
-                        0% {opacity: .2;}
-                        20% {opacity: 1;}
-                        100% {opacity: .2;}
-                    
-                    }
-                
-                `}
+            {/* Main Chat */}
+            <div className="chat-container">
+                <div className="chat-header">Legal Advice Chatbot</div>
 
-            </style>
-
-            <div style={{padding: 20}}>
-
-                <button
-                
-                    onClick={logout}
-                    style={{
-
-                        padding: "8px 14px",
-                        background: "red",
-                        color: "white",
-                        borderRadius: 6,
-                        marginBottom: 20
-
-                    }}
-                    
-                >
-                    Logout
-                </button>
-
-                <h1>MyPropertyAid</h1>
-
-                <div
-                    style={{
-
-                    height: 400,
-                    overflowY: "auto",
-                    border: "1px solid #ddd",
-                    padding: 10,
-                    borderRadius: 8,
-                    marginBottom: 10,
-                        
-                    }}
-                >
-
+                <div className="chat-messages">
                     {messages.map((msg, i) => (
-
                         <div
-                        
                             key={i}
-                            style={{
-
-                                textAlign: msg.role === "user" ? "right" : "left",
-                                marginBottom: 10,
-
-                            }}
-                        
+                            className={`message ${
+                                msg.role === "user"
+                                    ? "message-user"
+                                    : "message-assistant"
+                            }`}
                         >
-
-                            <div
-                            
-                                style={{
-
-                                    display: "inline-block",
-                                    padding: 10,
-                                    borderRadius: 10,
-                                    background: msg.role === "user" ? "#007bff" : "#eee",
-                                    color: msg.role === "user" ? "white" : "black",
-
-                                }}
-                            
-                            >
-                                {msg.content}
-
-                            </div>
-
+                            {msg.content}
                         </div>
-
                     ))}
 
                     {loading && (
-
-                        <div style={{textAlign: "left", marginBottom: 10}}>
-
-                            <div
-                            
-                                style={{
-
-                                    display: "inline-block",
-                                    padding: 10,
-                                    borderRadius: 10,
-                                    background: "#eee",
-                                    color: "#555",
-                                    fontStyle: "italic",
-
-                                }}
-                            
-                            >
-
-                                <span className="dot1">●</span>
-                                <span className="dot2">●</span>
-                                <span className="dot3">●</span>
-
-                            </div>
-
+                        <div className="typing-indicator">
+                            <div className="dot"></div>
+                            <div className="dot"></div>
+                            <div className="dot"></div>
                         </div>
-
                     )}
 
+                    {/* scroll anchor */}
+                    <div ref={messagesEndRef}></div>
                 </div>
 
-                <div style={{ display: "flex", gap: 10}}>
-
+                {/* Input */}
+                <div className="chat-input-area">
                     <input
-                    
+                        className="chat-input"
                         value={input}
                         onChange={(e) => setInput(e.target.value)}
-                        placeholder="Ask your real estate law question..."
-                        style={{
-
-                            flexGrow: 1,
-                            padding: 10,
-                            borderRadius: 6,
-                            border: "1px solid #ccc",
-
-                        }}
-                    
+                        placeholder="Ask your legal question..."
+                        onKeyDown={(e) => e.key === "Enter" && sendMessage()}
                     />
 
-                    <button
-                    
-                        onClick={sendMessage}
-                        style={{
-
-                            padding: "10px 15px",
-                            borderRadius: 6,
-                            background: "#007bff",
-                            color: "white",
-
-                        }}
-
-                    >
-
+                    <button className="send-btn" onClick={sendMessage}>
                         Send
-
                     </button>
-
                 </div>
-
             </div>
-
-        </>
-
+        </div>
     );
 
 }
