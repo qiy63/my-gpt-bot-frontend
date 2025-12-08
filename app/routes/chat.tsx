@@ -1,10 +1,11 @@
 import * as React from "react";
 import { useNavigate } from "react-router";
+import { Sidebar } from "../components/Sidebar";
+import { ChatArea } from "../components/ChatArea";
 import "../styles/chat.css";
-
 interface Message {
 
-    role: "user" | "assistant";
+    type: "user" | "assistant";
     content: string;
 
 }
@@ -12,6 +13,7 @@ interface Message {
 export default function ChatPage() {
 
     const navigate = useNavigate();
+    const [sidebarCollapsed, setSidebarCollapsed] = React.useState(false);
     const [messages, setMessages] = React.useState<Message[]>([]);
     const [input, setInput] = React.useState("");
     const [loading, setLoading] = React.useState(false);
@@ -49,7 +51,7 @@ export default function ChatPage() {
 
         if (!input.trim()) return;
 
-        const newMessages = [...messages, {role: "user" as const, content: input}];
+        const newMessages = [...messages, {type: "user" as const, content: input}];
         setMessages(newMessages);
         setInput("");
 
@@ -77,7 +79,7 @@ export default function ChatPage() {
 
             setMessages([
                 ...newMessages, {
-                    role: "assistant" as const, 
+                    type: "assistant" as const, 
                     content: data.answer ?? "No Response",
                 },
             ]);
@@ -90,7 +92,7 @@ export default function ChatPage() {
             setMessages([
 
                 ...newMessages,
-                { role: "assistant" as const, content: "Error: unable to connect to server."}
+                { type: "assistant" as const, content: "Error: unable to connect to server."}
 
             ]);
 
@@ -99,68 +101,26 @@ export default function ChatPage() {
     };
 
     return (
-        <div className="chat-layout">
-            {/* Sidebar */}
-            <div className="chat-sidebar">
-                <div className="sidebar-title">MyPropertyAid</div>
+  <div className="chat-layout flex">
+    {/* Sidebar */}
+    <Sidebar
+      isCollapsed={sidebarCollapsed}
+      onToggleCollapse={() => setSidebarCollapsed(!sidebarCollapsed)}
+    />
 
-                <div className="sidebar-item" onClick={() => navigate("/profile")}>
-                    Profile
-                </div>
-
-                <div className="sidebar-item" onClick={() => navigate("/chat")}>
-                    Chat
-                </div>
-
-                <div className="logout-btn" onClick={logout}>Logout</div>
-            </div>
-
-            {/* Main Chat */}
-            <div className="chat-container">
-                <div className="chat-header">Legal Advice Chatbot</div>
-
-                <div className="chat-messages">
-                    {messages.map((msg, i) => (
-                        <div
-                            key={i}
-                            className={`message ${
-                                msg.role === "user"
-                                    ? "message-user"
-                                    : "message-assistant"
-                            }`}
-                        >
-                            {msg.content}
-                        </div>
-                    ))}
-
-                    {loading && (
-                        <div className="typing-indicator">
-                            <div className="dot"></div>
-                            <div className="dot"></div>
-                            <div className="dot"></div>
-                        </div>
-                    )}
-
-                    {/* scroll anchor */}
-                    <div ref={messagesEndRef}></div>
-                </div>
-
-                {/* Input */}
-                <div className="chat-input-area">
-                    <input
-                        className="chat-input"
-                        value={input}
-                        onChange={(e) => setInput(e.target.value)}
-                        placeholder="Ask your legal question..."
-                        onKeyDown={(e) => e.key === "Enter" && sendMessage()}
-                    />
-
-                    <button className="send-btn" onClick={sendMessage}>
-                        Send
-                    </button>
-                </div>
-            </div>
-        </div>
-    );
+    {/* Chat Area */}
+    <ChatArea
+      messages={messages.map((m, i) => ({
+        id: i,
+        type: m.type, // ensure 'user' or 'assistant'
+        content: m.content,
+      }))}
+      input={input}
+      loading={loading}
+      setInput={setInput}
+      sendMessage={sendMessage}
+    />
+  </div>
+);
 
 }
